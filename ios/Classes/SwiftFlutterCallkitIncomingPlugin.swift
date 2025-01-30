@@ -335,6 +335,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
             }
             self.callManager.endCall(call: call!)
+       
             deactivateAudioSession()
         }
     }
@@ -615,6 +616,51 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }
         call.endCall()
         self.callManager.removeCall(call)
+       
+        let answerCall = self.answerCall
+        let outgoingCall = self.outgoingCall
+        
+//        let calls = [answerCall, outgoingCall]
+//
+//        if let callToCheck = calls.compactMap({ $0 }).first(where: { $0.uuid != call.uuid }) {
+//            sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
+//            
+//            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+//                appDelegate.onDecline(call, action)
+//            } else {
+//                action.fulfill()
+//            }
+//            return
+//        }
+        if(answerCall != nil)
+        {
+            if (call.uuid != answerCall!.uuid) {
+                self.isFromPushKit = false
+                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
+                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+                    appDelegate.onDecline(call, action)
+                } else {
+                    action.fulfill()
+                }
+                self.answerCall = self.callManager.calls.first
+                return;
+            }
+        }
+        if(outgoingCall != nil)
+        {
+            if (call.uuid != outgoingCall!.uuid) {
+                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
+                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+                    appDelegate.onDecline(call, action)
+                } else {
+                    action.fulfill()
+                }
+                self.answerCall = self.callManager.calls.first
+                return;
+            }
+        }
+        
+
         if (self.answerCall == nil && self.outgoingCall == nil) {
             sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
             if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
@@ -630,6 +676,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 action.fulfill()
             }
         }
+        
+        self.answerCall = self.callManager.calls.first
     }
     
     
