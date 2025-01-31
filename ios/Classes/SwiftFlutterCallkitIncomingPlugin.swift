@@ -646,19 +646,19 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 return;
             }
         }
-        if(outgoingCall != nil)
-        {
-            if (call.uuid != outgoingCall!.uuid) {
-                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                    appDelegate.onDecline(call, action)
-                } else {
-                    action.fulfill()
-                }
-                self.answerCall = self.callManager.calls.first
-                return;
-            }
-        }
+//        if(outgoingCall != nil)
+//        {
+//            if (call.uuid != outgoingCall!.uuid) {
+//                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
+//                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+//                    appDelegate.onDecline(call, action)
+//                } else {
+//                    action.fulfill()
+//                }
+//                self.outgoingCall = self.callManager.calls.first
+//                return;
+//            }
+//        }
         
 
         if (self.answerCall == nil && self.outgoingCall == nil) {
@@ -678,6 +678,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }
         
         self.answerCall = self.callManager.calls.first
+        self.outgoingCall = self.callManager.calls.first
     }
     
     
