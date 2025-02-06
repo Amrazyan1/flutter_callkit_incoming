@@ -614,27 +614,16 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             action.fail()
             return
         }
+        
+        let isCallWasConnected = call.connectData != nil;
+
         call.endCall()
         self.callManager.removeCall(call)
-       
-        let answerCall = self.answerCall
-        let outgoingCall = self.outgoingCall
         
-//        let calls = [answerCall, outgoingCall]
-//
-//        if let callToCheck = calls.compactMap({ $0 }).first(where: { $0.uuid != call.uuid }) {
-//            sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-//            
-//            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-//                appDelegate.onDecline(call, action)
-//            } else {
-//                action.fulfill()
-//            }
-//            return
-//        }
-        if(answerCall != nil)
-        {
-            if (call.uuid != answerCall!.uuid) {
+        let callCount = self.callManager.calls.count
+        
+        if (callCount < 1) {
+            if (self.answerCall == nil) {
                 self.isFromPushKit = false
                 sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
                 if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
@@ -642,43 +631,37 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 } else {
                     action.fulfill()
                 }
-                self.answerCall = self.callManager.calls.first
-                return;
+            }else
+            {
+                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, call.data.toJSON())
+                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+                    appDelegate.onEnd(call, action)
+                } else {
+                    action.fulfill()
+                }
+                self.answerCall = nil //if this was the only call, answer call should be null
             }
-        }
-        if(outgoingCall != nil)
-        {
-            if (call.uuid != outgoingCall!.uuid) {
+            return;
+        }else{
+            if(isCallWasConnected == false)
+            {
                 sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
                 if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
                     appDelegate.onDecline(call, action)
                 } else {
                     action.fulfill()
                 }
-                self.outgoingCall = self.callManager.calls.first
-                return;
+            }else
+            {
+                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, call.data.toJSON())
+                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
+                    appDelegate.onEnd(call, action)
+                } else {
+                    action.fulfill()
+                }
             }
+            return;
         }
-        
-
-        if (self.answerCall == nil && self.outgoingCall == nil) {
-            sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                appDelegate.onDecline(call, action)
-            } else {
-                action.fulfill()
-            }
-        }else {
-            sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, call.data.toJSON())
-            if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-                appDelegate.onEnd(call, action)
-            } else {
-                action.fulfill()
-            }
-        }
-        
-        self.answerCall = self.callManager.calls.first
-        self.outgoingCall = self.callManager.calls.first
     }
     
     
