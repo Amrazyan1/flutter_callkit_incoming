@@ -336,7 +336,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             }
             self.callManager.endCall(call: call!)
        
-            deactivateAudioSession()
+//            deactivateAudioSession()
         }
     }
     
@@ -391,9 +391,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             }
         }
     }
-    
-    
-    
+        
     func callEndTimeout(_ data: Data) {
         self.saveEndCall(data.uuid, 3)
         guard let call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!) else {
@@ -403,7 +401,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
             appDelegate.onTimeOut(call)
         }
-        deactivateAudioSession()
+//        deactivateAudioSession()
     }
     
     func getHandleType(_ handleType: String?) -> CXHandle.HandleType {
