@@ -317,7 +317,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         if (fromVoip == true && call == nil || (call != nil && self.answerCall == nil && self.outgoingCall == nil)) {
 
             let cxCallUpdate = CXCallUpdate()
-            self.sharedProvider!.reportNewIncomingCall(
+            self.sharedProvider?.reportNewIncomingCall(
                 with: UUID(uuidString: data.uuid)!,
                 update: cxCallUpdate,
                 completion: { error in
