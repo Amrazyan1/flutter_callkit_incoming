@@ -277,7 +277,13 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
                     callkitNotificationManager?.requestNotificationPermission(activity, map)
                 }
                 "requestFullIntentPermission" -> {
-                    callkitNotificationManager?.requestFullIntentPermission(activity)
+                    val map = buildMap {
+                        val args = call.arguments
+                        if (args is Map<*, *>) {
+                            putAll(args as Map<String, Any>)
+                        }
+                    }
+                    callkitNotificationManager?.requestFullIntentPermission(activity, map)
                 }
                 // EDIT - clear the incoming notification/ring (after accept/decline/timeout)
                 "hideCallkitIncoming" -> {
@@ -288,6 +294,11 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
                 "endNativeSubsystemOnly" -> {
 
+                }
+
+                "getFullIntnentPermissionStatus" -> {
+                    val allowed = callkitNotificationManager?.getNotificationManager()?.canUseFullScreenIntent()
+                    result.success(allowed)
                 }
 
                 "setAudioRoute" -> {
