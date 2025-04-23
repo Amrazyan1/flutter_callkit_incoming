@@ -139,6 +139,10 @@ class FlutterCallkitIncoming {
     return await _channel.invokeMethod("requestFullIntentPermission");
   }
 
+   static Future<bool> getFullIntnentPermissionStatus() async {
+    return (await _channel.invokeMethod("getFullIntnentPermissionStatus")) ;
+  }
+
   static CallEvent? _receiveCallEvent(dynamic data) {
     Event? event;
     Map<String, dynamic> body = {};
