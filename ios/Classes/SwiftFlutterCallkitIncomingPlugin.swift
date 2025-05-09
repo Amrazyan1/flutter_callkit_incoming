@@ -334,6 +334,11 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             }else {
                 call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
             }
+            
+            if let dataExtra = call!.data.extra.mutableCopy() as? NSMutableDictionary {
+                dataExtra["chelsea"] = "arsenal"
+                call!.data.extra = dataExtra
+            }
             self.callManager.endCall(call: call!)
        
 //            deactivateAudioSession()
@@ -613,7 +618,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             return
         }
         
-        let isCallWasConnected = call.connectData != nil;
+        let isCallWasConnected = call.connectedData != nil;
 
         call.endCall()
         self.callManager.removeCall(call)
@@ -636,46 +641,6 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 action.fulfill()
             }
         }
-//        if (callCount < 1) {
-//            if (self.answerCall == nil) {
-//                self.isFromPushKit = false
-//                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-//                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-//                    appDelegate.onDecline(call, action)
-//                } else {
-//                    action.fulfill()
-//                }
-//            }else
-//            {
-//                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, call.data.toJSON())
-//                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-//                    appDelegate.onEnd(call, action)
-//                } else {
-//                    action.fulfill()
-//                }
-//                self.answerCall = nil //if this was the only call, answer call should be null
-//            }
-//            return;
-//        }else{
-//            if(isCallWasConnected == false)
-//            {
-//                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_DECLINE, self.data?.toJSON())
-//                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-//                    appDelegate.onDecline(call, action)
-//                } else {
-//                    action.fulfill()
-//                }
-//            }else
-//            {
-//                sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, call.data.toJSON())
-//                if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
-//                    appDelegate.onEnd(call, action)
-//                } else {
-//                    action.fulfill()
-//                }
-//            }
-//            return;
-//        }
     }
     
     
