@@ -238,7 +238,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     @objc public func showCallkitIncoming(_ data: Data, fromPushKit: Bool) {
-        configurAudioSession()
+        //configurAudioSession()
         
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
