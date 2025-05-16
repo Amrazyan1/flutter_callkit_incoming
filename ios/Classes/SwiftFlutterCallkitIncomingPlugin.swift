@@ -313,6 +313,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         if let dataExtra = data.extra as? [String: Any],
            let value = dataExtra["fromVoip"] as? Bool {
             fromVoip = value
+            self.isFromPushKit = true
         } else {
             fromVoip = false
         }
@@ -333,7 +334,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
      
             if(self.isFromPushKit){
                 call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
-                self.isFromPushKit = false
+//                self.isFromPushKit = false
             }else {
                 call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
             }
@@ -633,6 +634,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 } else {
                     action.fulfill()
                 }
+                self.isFromPushKit = false
             }
         }else
         {
