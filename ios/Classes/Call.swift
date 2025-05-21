@@ -7,7 +7,7 @@
 
 import Foundation
 import AVFoundation
-
+import CallKit
 public class Call: NSObject {
     
     public var uuid: UUID
@@ -129,6 +129,7 @@ public class Call: NSObject {
 @objc public class Data: NSObject {
     @objc public var uuid: String
     @objc public var nameCaller: String
+    @objc public var phoneNumber: String
     @objc public var appName: String
     @objc public var handle: String
     @objc public var avatar: String
@@ -143,6 +144,7 @@ public class Call: NSObject {
     @objc public var supportsVideo: Bool
     @objc public var maximumCallGroups: Int
     @objc public var maximumCallsPerCallGroup: Int
+    @nonobjc public var supportedHandleTypes: Set<CXHandle.HandleType>
     @objc public var supportsDTMF: Bool
     @objc public var supportsHolding: Bool
     @objc public var supportsGrouping: Bool
@@ -155,9 +157,10 @@ public class Call: NSObject {
     @objc public var audioSessionPreferredSampleRate: Double
     @objc public var audioSessionPreferredIOBufferDuration: Double
     
-    @objc public init(id: String, nameCaller: String, handle: String, type: Int) {
+    @objc public init(id: String, nameCaller: String,phoneNumber: String, handle: String, type: Int) {
         self.uuid = id
         self.nameCaller = nameCaller
+        self.phoneNumber = phoneNumber
         self.appName = "Callkit"
         self.handle = handle
         self.avatar = ""
@@ -170,6 +173,11 @@ public class Call: NSObject {
         self.supportsVideo = true
         self.maximumCallGroups = 2
         self.maximumCallsPerCallGroup = 1
+        self.supportedHandleTypes = [
+                   CXHandle.HandleType.generic,
+                   CXHandle.HandleType.emailAddress,
+                   CXHandle.HandleType.phoneNumber
+               ]
         self.supportsDTMF = true
         self.supportsHolding = true
         self.supportsGrouping = true
@@ -194,6 +202,7 @@ public class Call: NSObject {
     public init(args: [String: Any?]) {
         self.uuid = args["id"] as? String ?? ""
         self.nameCaller = args["nameCaller"] as? String ?? ""
+        self.phoneNumber = args["phoneNumber"] as? String ?? ""
         self.appName = args["appName"] as? String ?? "Callkit"
         self.handle = args["handle"] as? String ?? ""
         self.avatar = args["avatar"] as? String ?? ""
@@ -209,6 +218,15 @@ public class Call: NSObject {
             self.supportsVideo = ios["supportsVideo"] as? Bool ?? true
             self.maximumCallGroups = ios["maximumCallGroups"] as? Int ?? 2
             self.maximumCallsPerCallGroup = ios["maximumCallsPerCallGroup"] as? Int ?? 1
+            
+            self.supportedHandleTypes = Set(
+                          (ios["supportedHandleTypes"] as? Set<Int>)?.compactMap { CXHandle.HandleType(rawValue: $0) }
+                          ?? [
+                              CXHandle.HandleType.generic,
+                              CXHandle.HandleType.emailAddress,
+                              CXHandle.HandleType.phoneNumber
+                          ]
+                      )
             self.supportsDTMF = ios["supportsDTMF"] as? Bool ?? true
             self.supportsHolding = ios["supportsHolding"] as? Bool ?? true
             self.supportsGrouping = ios["supportsGrouping"] as? Bool ?? true
@@ -226,6 +244,14 @@ public class Call: NSObject {
             self.supportsVideo = args["supportsVideo"] as? Bool ?? true
             self.maximumCallGroups = args["maximumCallGroups"] as? Int ?? 2
             self.maximumCallsPerCallGroup =  args["maximumCallsPerCallGroup"] as? Int ?? 1
+            self.supportedHandleTypes = Set(
+                            (args["supportedHandleTypes"] as? Set<Int>)?.compactMap { CXHandle.HandleType(rawValue: $0) }
+                            ?? [
+                                CXHandle.HandleType.generic,
+                                CXHandle.HandleType.emailAddress,
+                                CXHandle.HandleType.phoneNumber
+                            ]
+                        )
             self.supportsDTMF = args["supportsDTMF"] as? Bool ?? true
             self.supportsHolding = args["supportsHolding"] as? Bool ?? true
             self.supportsGrouping = args["supportsGrouping"] as? Bool ?? true
@@ -263,6 +289,7 @@ public class Call: NSObject {
             "uuid": uuid,
             "id": uuid,
             "nameCaller": nameCaller,
+            "phoneNumber": phoneNumber,
             "appName": appName,
             "handle": handle,
             "avatar": avatar,
@@ -283,6 +310,7 @@ public class Call: NSObject {
             var map: [String: Any] = [:]
 
             map["nameCaller"] = nameCaller
+            map["phoneNumber"] = phoneNumber
             map["handle"] = handle
             
             var mapExtras = extra as? [String: Any]
