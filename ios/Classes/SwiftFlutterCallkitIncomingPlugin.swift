@@ -35,6 +35,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     
     private var data: Data?
     private var isFromPushKit: Bool = false
+    private var holdFromFlutter: Bool = false
     private var silenceEvents: Bool = false
     private let devicePushTokenVoIP = "DevicePushTokenVoIP"
 
@@ -156,10 +157,12 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         case "holdCall":
             guard let args = call.arguments as? [String: Any] ,
                   let callId = args["id"] as? String,
+                  let fromFlutter = args["fromFlutter"] as? Bool,
                   let onHold = args["isOnHold"] as? Bool else {
                 result("OK")
                 return
             }
+            self.holdFromFlutter = fromFlutter;
             self.holdCall(callId, onHold: onHold)
             result("OK")
             break
@@ -684,7 +687,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     private func sendHoldEvent(_ id: String, _ isOnHold: Bool) {
-        self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_TOGGLE_HOLD, [ "id": id, "isOnHold": isOnHold ])
+        self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_TOGGLE_HOLD, [ "id": id, "isOnHold": isOnHold,"fromPushKit": self.holdFromFlutter ])
+        holdFromFlutter = false;
     }
     
 }
