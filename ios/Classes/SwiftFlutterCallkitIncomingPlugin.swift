@@ -106,6 +106,13 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             }
             if let getArgs = args as? [String: Any] {
                 self.data = Data(args: getArgs)
+
+                guard let callUUID = UUID(uuidString: self.data?.uuid ?? ""),
+                        let call = self.callManager.callWithUUID(uuid: callUUID) else {
+                    result(false)
+                    return
+                }
+
                 showCallkitIncoming(self.data!, fromPushKit: false)
             }
             result("OK")
@@ -346,6 +353,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
             }else {
                 call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
+                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
             }
             
             print("KIK endCall   \(data.uuid)")
