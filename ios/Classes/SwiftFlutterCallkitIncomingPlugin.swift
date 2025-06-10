@@ -353,7 +353,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
             }else {
                 call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
-                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
+//                self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
             }
             
             print("KIK endCall   \(data.uuid)")
@@ -485,23 +485,30 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         NotificationCenter.default.post(name: AVAudioSession.interruptionNotification, object: self, userInfo: userInfo)
     }
     
-    func configurAudioSession(){
-              NSLog("flutter: configurAudioSession()")
-              let session = AVAudioSession.sharedInstance()
-              do{
-                  try session.setCategory(AVAudioSession.Category.playAndRecord, options: [
-                      .allowBluetoothA2DP,
-                      .allowBluetooth,
-                  ])
-                  try session.setMode(AVAudioSession.Mode.voiceChat)
-                  try session.overrideOutputAudioPort(.none)
-                  try session.setPreferredSampleRate(data?.audioSessionPreferredSampleRate ?? 44100.0)
-                  try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
-              }catch{
-                  NSLog("flutter: configurAudioSession() Error setting audio session properties: \(error)")
-                  print(error)
-              }
+    func configurAudioSession() {
+        NSLog("flutter: configurAudioSession()")
+        let session = AVAudioSession.sharedInstance()
+        do {
+            if session.category != .playAndRecord || session.mode != .voiceChat {
+                try session.setCategory(
+                    .playAndRecord,
+                    mode: .voiceChat,
+                    options: [
+                        .allowBluetooth,
+                        .allowBluetoothA2DP,
+                        .mixWithOthers
+                    ]
+                )
+            }
+            try session.setPreferredSampleRate(data?.audioSessionPreferredSampleRate ?? 44100.0)
+            try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
+        } catch {
+            NSLog("flutter: configurAudioSession() Error setting audio session properties: \(error)")
+            print(error)
+        }
     }
+
+
     
     func getAudioSessionMode(_ audioSessionMode: String?) -> AVAudioSession.Mode {
         var mode = AVAudioSession.Mode.default
