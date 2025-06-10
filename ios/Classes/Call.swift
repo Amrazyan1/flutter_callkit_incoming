@@ -48,6 +48,12 @@ public class Call: NSObject {
         }
     }
     
+    var isSpeakerOn = false{
+        didSet{
+            
+        }
+    }
+    
     var isMuted = false{
         didSet{
             
