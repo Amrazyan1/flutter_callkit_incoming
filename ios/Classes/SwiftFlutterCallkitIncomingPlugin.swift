@@ -337,7 +337,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             if isFromFlutter {
                 do {
                     if (isSpeakerOn) {
-                        try session.overrideOutputAudioPort(.none)
+                        try session.overrideOutputAudioPort(.speaker)
                     }else {
                         try session.overrideOutputAudioPort(.none)
                     }
@@ -629,6 +629,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             self?.sharedProvider?.reportOutgoingCall(with: call.uuid, connectedAt: call.connectedData)
         }
         self.answerCall = call
+        self.data = call.data
         sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ACCEPT, self.data?.toJSON())
         if let appDelegate = UIApplication.shared.delegate as? CallkitIncomingAppDelegate {
             appDelegate.onAccept(call, action)
