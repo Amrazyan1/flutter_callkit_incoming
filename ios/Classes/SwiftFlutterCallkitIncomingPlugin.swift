@@ -288,7 +288,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         let uuid = UUID(uuidString: data.uuid)
         callStates[uuid!] = .incoming
 
-        configurAudioSession()
+//        configurAudioSession()
         self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
             if(error == nil) {
                 self.configurAudioSession()
@@ -525,7 +525,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
     }
     
     func configurAudioSession() {
-        NSLog("flutter: configurAudioSession()")
+        NSLog("SwiftFlutterCallkitIncomingPlugin: configurAudioSession()")
         let session = AVAudioSession.sharedInstance()
         do {
             if session.category != .playAndRecord || session.mode != .voiceChat {
@@ -543,7 +543,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
             try session.setActive(true, options: [])
         } catch {
-            NSLog("flutter: configurAudioSession() Error setting audio session properties: \(error)")
+            NSLog("SwiftFlutterCallkitIncomingPlugin: configurAudioSession() Error setting audio session properties: \(error)")
             print(error)
         }
        
@@ -621,7 +621,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         callStates[call.uuid] = .connected
         print("KIK CONNECT  \(action.callUUID)")
 
-        self.configurAudioSession()
+//        self.configurAudioSession()
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1200)) {
             self.configurAudioSession()
         }
