@@ -532,7 +532,7 @@ class CallkitNotificationManager(private val context: Context) {
     }
 
 
-    fun getNotificationManager(): NotificationManagerCompat {
+    private fun getNotificationManager(): NotificationManagerCompat {
         return NotificationManagerCompat.from(context)
     }
 
@@ -566,16 +566,12 @@ class CallkitNotificationManager(private val context: Context) {
         }
     }
 
-    fun requestFullIntentPermission(activity: Activity?, map: Map<String, Any>) {
-        this.dataNotificationPermission = map
+    fun requestFullIntentPermission(activity: Activity?) {
         val canUseFullScreenIntent = getNotificationManager().canUseFullScreenIntent();
         if (!canUseFullScreenIntent && Build.VERSION.SDK_INT > 33) {
             val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT).apply {
-
-                data =  Uri.fromParts("package", activity?.packageName, null)
-
+                data = Uri.fromParts("package", activity?.packageName, null)
             }
-
             activity?.startActivity(intent)
         }
     }
@@ -626,6 +622,7 @@ class CallkitNotificationManager(private val context: Context) {
                                         Uri.fromParts("package", it.packageName, null)
                                     )
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                     it.startActivity(intent)
                                 }
                             } else {
@@ -639,6 +636,7 @@ class CallkitNotificationManager(private val context: Context) {
                                         Uri.fromParts("package", it.packageName, null)
                                     )
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                                     it.startActivity(intent)
                                 }
                             }
@@ -664,5 +662,3 @@ class CallkitNotificationManager(private val context: Context) {
         }
     }
 }
-
-
