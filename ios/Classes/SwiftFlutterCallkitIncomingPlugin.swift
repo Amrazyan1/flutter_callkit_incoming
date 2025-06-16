@@ -667,7 +667,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
      
         self.callManager.removeCall(call)
        
-        if let state = callStates[call.uuid], state != .connected && state != .outgoing {
+        if let state = callStates[call.uuid], state != .connected && state != .outgoing && state != .held{
             // The call was never really connected (e.g., declined second call)
             print("KIK DECLINE   \(action.callUUID)")
 
