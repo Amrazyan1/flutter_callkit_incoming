@@ -538,7 +538,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                     ]
                 )
             }
-            try session.overrideOutputAudioPort(.none)
+            
             try session.setPreferredSampleRate(data?.audioSessionPreferredSampleRate ?? 44100.0)
             try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
             try session.setActive(true, options: [])
