@@ -114,7 +114,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                     return
                 }
 
-                showCallkitIncoming(self.data!, fromPushKit: false)
+//                showCallkitIncoming(self.data!, fromPushKit: false)//only from voip
             }
             result("OK")
             break
@@ -265,7 +265,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         return nil
     }
     
-    @objc public func showCallkitIncoming(_ data: Data, fromPushKit: Bool) {
+    @objc public func showCallkitIncoming(_ data: Data, fromPushKit: Bool,completion: @escaping () -> Void) {
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
             self.data = data
@@ -289,7 +289,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         callStates[uuid!] = .incoming
 
 //        configurAudioSession()
-        self.sharedProvider?.reportNewIncomingCall(with: uuid!, update: callUpdate) { error in
+        self.sharedProvider!.reportNewIncomingCall(with: uuid!,
+               update: callUpdate,completion: { (error) in
             if(error == nil) {
                 self.configurAudioSession()
                 let call = Call(uuid: uuid!, data: data)
@@ -298,7 +299,8 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_INCOMING, data.toJSON())
                 self.endCallNotExist(data)
             }
-        }
+            completion()
+        })
     }
     
     @objc public func startCall(_ data: Data, fromPushKit: Bool) {
@@ -361,7 +363,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }
     }
     private var fromVoip: Bool = false
-    @objc public func endCall(_ data: Data) {
+    @objc public func endCall(_ data: Data,completion: @escaping () -> Void = {}) {//if completion not null, it means that it is from VOIP
         var call: Call? = nil
         
          call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!)
@@ -375,11 +377,12 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         if (fromVoip == true && call == nil)
         {
             let cxCallUpdate = CXCallUpdate()
-                       self.sharedProvider?.reportNewIncomingCall(
+                       self.sharedProvider!.reportNewIncomingCall(
                            with: UUID(uuidString: data.uuid)!,
                            update: cxCallUpdate,
                            completion: { error in
                                print("endCall SWIFT FAKE REPORT reportNewIncomingCall")
+                               completion()
                }
            )
            self.sharedProvider?.reportCall(with: UUID(uuidString: data.uuid)!, endedAt: Date(), reason: CXCallEndedReason.answeredElsewhere)
@@ -541,7 +544,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             
             try session.setPreferredSampleRate(data?.audioSessionPreferredSampleRate ?? 44100.0)
             try session.setPreferredIOBufferDuration(data?.audioSessionPreferredIOBufferDuration ?? 0.005)
-            try session.setActive(true, options: [])
+            try session.setActive(true)
         } catch {
             NSLog("SwiftFlutterCallkitIncomingPlugin: configurAudioSession() Error setting audio session properties: \(error)")
             print(error)
