@@ -23,7 +23,7 @@ import java.lang.ref.WeakReference
 class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityAware,
     PluginRegistry.RequestPermissionsResultListener {
     companion object {
-
+        private val TAG = "FlutterCallkitIncomingPlugin"
         const val EXTRA_CALLKIT_CALL_DATA = "EXTRA_CALLKIT_CALL_DATA"
 
         @SuppressLint("StaticFieldLeak")
@@ -37,17 +37,32 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
             return ::instance.isInitialized
         }
 
+        private val pendingEvents = object : LinkedHashMap<String, Map<String, Any>>() {
+            private val maxSize = 3
+
+            override fun put(key: String, value: Map<String, Any>): Map<String, Any>? {
+                if (size >= maxSize && !containsKey(key)) {
+                    val firstKey = keys.firstOrNull()
+                    if (firstKey != null) {
+                        remove(firstKey)
+                    }
+                }
+                return super.put(key, value)
+            }
+        }
         private val methodChannels = mutableMapOf<BinaryMessenger, MethodChannel>()
         private val eventChannels = mutableMapOf<BinaryMessenger, EventChannel>()
         private val eventHandlers = mutableListOf<WeakReference<EventCallbackHandler>>()
 
         fun sendEvent(event: String, body: Map<String, Any>) {
+            pendingEvents[event] = body
             eventHandlers.reapCollection().forEach {
                 it.get()?.send(event, body)
             }
         }
 
         public fun sendEventCustom(event: String, body: Map<String, Any>) {
+            pendingEvents[event] = body
             eventHandlers.reapCollection().forEach {
                 it.get()?.send(event, body)
             }
@@ -74,7 +89,11 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
             val events = EventChannel(binaryMessenger, "flutter_callkit_incoming_events")
             eventChannels[binaryMessenger] = events
-            val handler = EventCallbackHandler()
+            Log.d(TAG, "pendingEvents size is ${pendingEvents.size}")
+            val handler = EventCallbackHandler(pendingEvents) {
+                Log.d(TAG, "clear pendingEvents")
+                pendingEvents.clear()
+            }
             eventHandlers.add(WeakReference(handler))
             events.setStreamHandler(handler)
 
@@ -339,12 +358,20 @@ class FlutterCallkitIncomingPlugin : FlutterPlugin, MethodCallHandler, ActivityA
 
     }
 
-    class EventCallbackHandler : EventChannel.StreamHandler {
+    class EventCallbackHandler(
+        private val pendingEvents: MutableMap<String, Map<String, Any>> = mutableMapOf(),
+        private val onFlushed: (() -> Unit)? = null
+    ) : EventChannel.StreamHandler {
 
         private var eventSink: EventChannel.EventSink? = null
 
         override fun onListen(arguments: Any?, sink: EventChannel.EventSink) {
             eventSink = sink
+            for (event in pendingEvents.entries) {
+                send(event.key, event.value)
+            }
+            pendingEvents.clear()
+            onFlushed?.invoke()
         }
 
         fun send(event: String, body: Map<String, Any>) {
