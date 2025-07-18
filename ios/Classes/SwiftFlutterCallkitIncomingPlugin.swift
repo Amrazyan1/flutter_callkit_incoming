@@ -137,14 +137,11 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-            if(self.isFromPushKit){
+            if let getArgs = args as? [String: Any] {
+                self.data = Data(args: getArgs)
                 self.endCall(self.data!)
-            }else{
-                if let getArgs = args as? [String: Any] {
-                    self.data = Data(args: getArgs)
-                    self.endCall(self.data!)
-                }
             }
+
             result("OK")
             break
         case "muteCall":
@@ -154,7 +151,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-            
+
             self.muteCall(callId, isMuted: isMuted)
             result("OK")
             break
@@ -178,7 +175,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                         result("OK")
                         return
                     }
-                    
+
                     self.setSpeaker(callId, isSpeakerOn: isSpeakerOn, isFromFlutter: true)
                     result("OK")
                     break
@@ -224,14 +221,14 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 result("OK")
                 return
             }
-            
+
             self.silenceEvents = silence
             result("OK")
             break;
-        case "requestNotificationPermission": 
+        case "requestNotificationPermission":
             result("OK")
             break
-         case "requestFullIntentPermission": 
+         case "requestFullIntentPermission":
             result("OK")
             break
         case "hideCallkitIncoming":
@@ -247,16 +244,16 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             result(FlutterMethodNotImplemented)
         }
     }
-    
+
     @objc public func setDevicePushTokenVoIP(_ deviceToken: String) {
         UserDefaults.standard.set(deviceToken, forKey: devicePushTokenVoIP)
         self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_DID_UPDATE_DEVICE_PUSH_TOKEN_VOIP, ["deviceTokenVoIP":deviceToken])
     }
-    
+
     @objc public func getDevicePushTokenVoIP() -> String {
         return UserDefaults.standard.string(forKey: devicePushTokenVoIP) ?? ""
     }
-    
+
     @objc public func getAcceptedCall() -> Data? {
         NSLog("Call data ids \(String(describing: data?.uuid)) \(String(describing: answerCall?.uuid.uuidString))")
         if data?.uuid.lowercased() == answerCall?.uuid.uuidString.lowercased() {
@@ -264,16 +261,16 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }
         return nil
     }
-    
+
     @objc public func showCallkitIncoming(_ data: Data, fromPushKit: Bool,completion: @escaping () -> Void) {
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
             self.data = data
         }
-        
+
         var handle: CXHandle?
         handle = CXHandle(type: self.getHandleType(data.handleType), value: data.getEncryptHandle())
-        
+
         let callUpdate = CXCallUpdate()
         callUpdate.remoteHandle = handle
         callUpdate.supportsDTMF = data.supportsDTMF
@@ -282,9 +279,9 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         callUpdate.supportsUngrouping = data.supportsUngrouping
         callUpdate.hasVideo = data.type > 0 ? true : false
         callUpdate.localizedCallerName = data.nameCaller
-        
+
         initCallkitProvider(data)
-        
+
         let uuid = UUID(uuidString: data.uuid)
         callStates[uuid!] = .incoming
 
@@ -302,7 +299,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
             completion()
         })
     }
-    
+
     @objc public func startCall(_ data: Data, fromPushKit: Bool) {
         self.isFromPushKit = fromPushKit
         if(fromPushKit){
@@ -311,7 +308,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         initCallkitProvider(data)
         self.callManager.startCall(data)
     }
-    
+
     @objc public func muteCall(_ callId: String, isMuted: Bool) {
         guard let callId = UUID(uuidString: callId),
               let call = self.callManager.callWithUUID(uuid: callId) else {
@@ -350,7 +347,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
                 self.sendSpeakerEvent(callId.uuidString, isSpeakerOn)
             }
         }
-    
+
     @objc public func holdCall(_ callId: String, onHold: Bool) {
         guard let callId = UUID(uuidString: callId),
               let call = self.callManager.callWithUUID(uuid: callId) else {
@@ -363,11 +360,11 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         }
     }
     private var fromVoip: Bool = false
-    @objc public func endCall(_ data: Data,completion: @escaping () -> Void = {}) {//if completion not null, it means that it is from VOIP
+    @objc public func endCall(_ data: Data, completion: @escaping () -> Void = {}) {//if completion not null, it means that it is from VOIP
         var call: Call? = nil
-        
+
          call = self.callManager.callWithUUID(uuid: UUID(uuidString: data.uuid)!)
-               
+
         if let dataExtra = data.extra as? [String: Any],
            let value = dataExtra["fromVoip"] as? Bool {
             fromVoip = value
@@ -391,7 +388,7 @@ public class SwiftFlutterCallkitIncomingPlugin: NSObject, FlutterPlugin, CXProvi
         else
         {
             if(self.isFromPushKit){
-                call = Call(uuid: UUID(uuidString: self.data!.uuid)!, data: data)
+                call = Call(uuid: UUID(uuidString: data.uuid)!, data: data)
                 self.isFromPushKit = false
                 self.sendEvent(SwiftFlutterCallkitIncomingPlugin.ACTION_CALL_ENDED, data.toJSON())
             }else {
