@@ -93,6 +93,9 @@ data class Data(val args: Map<String, Any?>) {
     @JsonProperty("isShowMissedCallNotification")
     var isShowMissedCallNotification: Boolean = true
 
+    @JsonProperty("showMissCallNotificationOnEnd")
+    var showMissCallNotificationOnEnd: Boolean = false
+
     @JsonProperty("missedNotificationCount")
     var missedNotificationCount: Int = 1
 
@@ -179,6 +182,8 @@ data class Data(val args: Map<String, Any?>) {
             isShowCallback = android["isShowCallback"] as? Boolean ?: true
             isShowMissedCallNotification =
                 android["isShowMissedCallNotification"] as? Boolean ?: true
+            showMissCallNotificationOnEnd =
+                android["showMissCallNotificationOnEnd"] as? Boolean ?: true
         }
 
         val callingNotification: Map<String, Any?>? =
@@ -228,6 +233,10 @@ data class Data(val args: Map<String, Any?>) {
         bundle.putBoolean(
             CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_SHOW,
             isShowMissedCallNotification
+        )
+        bundle.putBoolean(
+            CallkitConstants.EXTRA_CALLKIT_SHOW_MISSED_CALL,
+            showMissCallNotificationOnEnd
         )
         bundle.putInt(
             CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_COUNT,
@@ -357,6 +366,8 @@ data class Data(val args: Map<String, Any?>) {
                 bundle.getInt(CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_ID)
             data.isShowMissedCallNotification =
                 bundle.getBoolean(CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_SHOW, true)
+            data.showMissCallNotificationOnEnd =
+                bundle.getBoolean(CallkitConstants.EXTRA_CALLKIT_SHOW_MISSED_CALL, false)
             data.missedNotificationCount =
                 bundle.getInt(CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_COUNT, 1)
             data.missedNotificationSubtitle =

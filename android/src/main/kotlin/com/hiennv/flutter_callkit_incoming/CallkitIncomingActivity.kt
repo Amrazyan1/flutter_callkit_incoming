@@ -206,16 +206,25 @@ class CallkitIncomingActivity : Activity() {
                 .into(ivLogo)
         }
 
-        val avatarUrl = data?.getString(CallkitConstants.EXTRA_CALLKIT_AVATAR, "")
-        if (avatarUrl != null && avatarUrl.isNotEmpty()) {
+       val avatarUrl = intent.extras
+            ?.getBundle(CallkitConstants.EXTRA_CALLKIT_INCOMING_DATA)
+            ?.getString(CallkitConstants.EXTRA_CALLKIT_AVATAR, "")
+
+        if (!avatarUrl.isNullOrEmpty()) {
             ivAvatar.visibility = View.VISIBLE
-            val headers =
-                data.getSerializable(CallkitConstants.EXTRA_CALLKIT_HEADERS) as HashMap<String, Any?>
-            getPicassoInstance(this@CallkitIncomingActivity, headers)
-                .load(avatarUrl)
-                .placeholder(R.drawable.ic_default_avatar)
-                .error(R.drawable.ic_default_avatar)
-                .into(ivAvatar)
+            val headers = intent.extras
+                ?.getBundle(CallkitConstants.EXTRA_CALLKIT_INCOMING_DATA)
+                ?.getSerializable(CallkitConstants.EXTRA_CALLKIT_HEADERS) as? HashMap<String, Any?>
+            headers?.let {
+                getPicassoInstance(this, it)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.ic_default_avatar)
+                    .error(R.drawable.ic_default_avatar)
+                    .into(ivAvatar)
+            }
+            llBackgroundAnimation.startRippleAnimation()
+        } else {
+            llBackgroundAnimation.stopRippleAnimation()
         }
 
         val callType = data?.getInt(CallkitConstants.EXTRA_CALLKIT_TYPE, 0) ?: 0

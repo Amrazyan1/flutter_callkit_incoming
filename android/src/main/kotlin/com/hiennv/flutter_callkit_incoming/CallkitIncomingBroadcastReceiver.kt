@@ -177,11 +177,15 @@ class CallkitIncomingBroadcastReceiver : BroadcastReceiver() {
 
             "${context.packageName}.${CallkitConstants.ACTION_CALL_ENDED}" -> {
                 try {
+                    val wasRunning = OngoingNotificationService.isRunning
                     sendEventFlutter(CallkitConstants.ACTION_CALL_ENDED, data)
                     sendBroadcastToApp(context, "${context.packageName}.ACTION_CALL_ENDED", data)
                     context.stopService(Intent(context, OngoingNotificationService::class.java))
                     context.stopService(Intent(context, CallkitSoundPlayerService::class.java))
                     callkitNotificationManager.clearIncomingNotification(data, false)
+                    if (!wasRunning && data.getBoolean(CallkitConstants.EXTRA_CALLKIT_MISSED_CALL_SHOW, false)) {
+                        callkitNotificationManager.showMissCallNotification(data)
+                    }
                     removeCall(context, Data.fromBundle(data))
                 } catch (error: Exception) {
                     Log.e(TAG, null, error)

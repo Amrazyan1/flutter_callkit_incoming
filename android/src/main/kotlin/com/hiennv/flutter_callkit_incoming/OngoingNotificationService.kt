@@ -30,11 +30,24 @@ import com.squareup.picasso.Target
 import okhttp3.OkHttpClient
 
 class OngoingNotificationService : Service() {
-
+    companion object {
+        @Volatile
+        var isRunning = false
+            private set
+    }
 
     private lateinit var notificationBuilder: NotificationCompat.Builder
     private var notificationViews: RemoteViews? = null
 
+    override fun onCreate() {
+        super.onCreate()
+        isRunning = true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        isRunning = false
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         showOngoingCallNotification(intent?.extras!!)
